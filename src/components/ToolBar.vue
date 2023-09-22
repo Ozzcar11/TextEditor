@@ -41,6 +41,7 @@ const copyHTML = () => {
 };
 
 const insertImage = () => {
+
   selection = document.getSelection();
 
   if (selection?.anchorNode === null || inEditableContainer(selection))
@@ -60,11 +61,13 @@ const insertImage = () => {
 
   selection?.empty();
 };
+
+const undo = () => {};
 </script>
 
 <template>
   <div class="tool-bar">
-    <button class="tool-bar__button icon" @click="$emit('undoText')">
+    <button class="tool-bar__button icon" @click="undo">
       <UndoIcon />
     </button>
     <button class="tool-bar__button icon" @click="$emit('redoText')">

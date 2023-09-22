@@ -1,15 +1,45 @@
 <script setup lang="ts">
 import ToolBar from "./components/ToolBar.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import type { Ref } from "vue";
 
 const editableText: Ref<HTMLDivElement | undefined> = ref();
+
+const eventsStack: string[] = [];
+
+const isSpaceKey: Ref<boolean> = ref(false);
+
+const recordEvent = (value?: boolean) => {
+  console.log(!isSpaceKey.value);
+
+  if (
+    // @ts-ignore: at() не поддерживается этой версий
+    editableText.value?.innerHTML !== eventsStack.at(-1) &&
+    !isSpaceKey.value
+  ) {
+    eventsStack.push(editableText.value?.innerHTML!);
+  }
+  isSpaceKey.value = value ? value : false;
+
+  console.log(eventsStack);
+};
+
+onMounted(() => {
+  recordEvent();
+});
 </script>
 
 <template>
   <div class="container">
     <ToolBar :editableText="editableText" />
-    <div ref="editableText" id="editable-text" contenteditable>
+    <div
+      ref="editableText"
+      id="editable-text"
+      @keydown.space="recordEvent(true)"
+      @focusout="recordEvent(false)"
+      @input="isSpaceKey = false"
+      contenteditable
+    >
       Таким образом консультация с широким активом представляет собой интересный
       эксперимент проверки позиций, занимаемых участниками в отношении
       поставленных задач. С другой стороны постоянное
