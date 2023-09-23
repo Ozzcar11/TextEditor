@@ -3,7 +3,7 @@ import ToolBar from "./components/ToolBar.vue";
 import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
 
-const editableText: Ref<string> = ref("Таким");
+const editableContainer: Ref<HTMLDivElement | undefined> = ref(undefined);
 
 const eventsStack: Ref<string[]> = ref([]);
 const eventsStackIndex: Ref<number> = ref(0);
@@ -23,35 +23,21 @@ const recordEvent = (e?: Event) => {
 };
 
 const textEdit = (e?: Event) => {
-  if (e !== undefined) saveText(e);
   recordEvent(e);
-};
-
-const range: Ref<Range | undefined> = ref(undefined);
-const saveRange = () => {
-  range.value = document.getSelection()?.getRangeAt(0);
-};
-
-const saveText = (e: Event) => {
-  console.log(range.value);
-
-  editableText.value = (e?.target as HTMLElement).innerHTML;
-  console.log(range.value);
-  const newSelection = document.getSelection();
-  newSelection?.removeAllRanges();
-  newSelection?.addRange(range.value!);
 };
 
 const pushToStack = () => {
   if (!lastItemSame()) {
-    eventsStack.value.push(editableText.value);
+    eventsStack.value.splice(eventsStackIndex.value);
+    eventsStack.value.push(editableContainer.value!.innerHTML!);
     eventsStackIndex.value++;
   }
+  console.log(eventsStack.value);
 };
 
 const lastItemSame = () => {
   // @ts-ignore: at() не поддерживается этой версий
-  return editableText.value === eventsStack.value.at(-1);
+  return editableContainer.value === eventsStack.value.at(-1);
 };
 
 const canUndo = computed(() => {
@@ -65,6 +51,16 @@ const canRedo = computed(() => {
 const undoText = () => {
   if (canUndo.value) {
     eventsStackIndex.value--;
+    editableContainer.value!.innerHTML =
+      eventsStack.value[eventsStackIndex.value];
+  }
+};
+
+const redoText = () => {
+  if (canRedo.value) {
+    eventsStackIndex.value++;
+    editableContainer.value!.innerHTML =
+      eventsStack.value[eventsStackIndex.value];
   }
 };
 
@@ -76,19 +72,21 @@ onMounted(() => {
 <template>
   <div class="container">
     <ToolBar
-      :editableText="editableText"
+      :editableContainer="editableContainer"
       :canUndo="canUndo"
       :canRedo="canRedo"
       @undoText="undoText"
+      @redoText="redoText"
     />
     <div
-      v-html="editableText"
       id="editable-text"
+      ref="editableContainer"
       @input="textEdit($event)"
       @focusout="pushToStack()"
-      @beforeinput="saveRange"
       contenteditable
-    ></div>
+    >
+      Таким
+    </div>
   </div>
 </template>
 
