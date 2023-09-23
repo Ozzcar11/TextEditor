@@ -1,78 +1,94 @@
 <script setup lang="ts">
 import ToolBar from "./components/ToolBar.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import type { Ref } from "vue";
 
-const editableText: Ref<HTMLDivElement | undefined> = ref();
+const editableText: Ref<string> = ref("Таким");
 
-const eventsStack: string[] = [];
+const eventsStack: Ref<string[]> = ref([]);
+const eventsStackIndex: Ref<number> = ref(0);
 
 const isSpaceKey: Ref<boolean> = ref(false);
 
-const recordEvent = (value?: boolean) => {
-  console.log(!isSpaceKey.value);
+const recordEvent = (e?: Event) => {
+  if ((e as InputEvent).data === " ") {
+    if (!isSpaceKey.value) {
+      isSpaceKey.value = true;
 
-  if (
-    // @ts-ignore: at() не поддерживается этой версий
-    editableText.value?.innerHTML !== eventsStack.at(-1) &&
-    !isSpaceKey.value
-  ) {
-    eventsStack.push(editableText.value?.innerHTML!);
+      pushToStack();
+
+      return;
+    }
+  } else isSpaceKey.value = false;
+};
+
+const textEdit = (e?: Event) => {
+  if (e !== undefined) saveText(e);
+  recordEvent(e);
+};
+
+const range: Ref<Range | undefined> = ref(undefined);
+const saveRange = () => {
+  range.value = document.getSelection()?.getRangeAt(0);
+};
+
+const saveText = (e: Event) => {
+  console.log(range.value);
+
+  editableText.value = (e?.target as HTMLElement).innerHTML;
+  console.log(range.value);
+  const newSelection = document.getSelection();
+  newSelection?.removeAllRanges();
+  newSelection?.addRange(range.value!);
+};
+
+const pushToStack = () => {
+  if (!lastItemSame()) {
+    eventsStack.value.push(editableText.value);
+    eventsStackIndex.value++;
   }
-  isSpaceKey.value = value ? value : false;
+};
 
-  console.log(eventsStack);
+const lastItemSame = () => {
+  // @ts-ignore: at() не поддерживается этой версий
+  return editableText.value === eventsStack.value.at(-1);
+};
+
+const canUndo = computed(() => {
+  return eventsStackIndex.value > 0;
+});
+
+const canRedo = computed(() => {
+  return eventsStack.value.length - 1 - eventsStackIndex.value > 0;
+});
+
+const undoText = () => {
+  if (canUndo.value) {
+    eventsStackIndex.value--;
+  }
 };
 
 onMounted(() => {
-  recordEvent();
+  pushToStack();
 });
 </script>
 
 <template>
   <div class="container">
-    <ToolBar :editableText="editableText" />
+    <ToolBar
+      :editableText="editableText"
+      :canUndo="canUndo"
+      :canRedo="canRedo"
+      @undoText="undoText"
+    />
     <div
-      ref="editableText"
+      v-html="editableText"
       id="editable-text"
-      @keydown.space="recordEvent(true)"
-      @focusout="recordEvent(false)"
-      @input="isSpaceKey = false"
+      @input="textEdit($event)"
+      @focusout="pushToStack()"
+      @beforeinput="saveRange"
       contenteditable
-    >
-      Таким образом консультация с широким активом представляет собой интересный
-      эксперимент проверки позиций, занимаемых участниками в отношении
-      поставленных задач. С другой стороны постоянное
-      информационно-пропагандистское обеспечение нашей деятельности представляет
-      собой интересный эксперимент проверки форм развития. Идейные соображения
-      высшего порядка, а также укрепление и развитие структуры влечет за собой
-      процесс внедрения и модернизации соответствующий условий активизации.
-      Задача организации, в особенности же реализация намеченных плановых
-      заданий играет важную роль в формировании дальнейших направлений развития.
-      Повседневная практика показывает, что постоянное
-      информационно-пропагандистское обеспечение нашей деятельности играет
-      важную роль в формировании существенных финансовых и административных
-      условий.Таким образом консультация с широким активом представляет собой
-      интересный эксперимент проверки позиций, занимаемых участниками в
-      отношении поставленных задач. С другой стороны постоянное
-      информационно-пропагандистское обеспечение нашей деятельности представляет
-      собой инйцу шо шщйоц ущойц ущошцщйуо йцщуо йщцоу щйоу шщйцош ущйтересный
-      эксперимент проверки форм развития. Идейные соображения высшего порядка, а
-      также укрепление и развитие структуры влечет за собой процесс внедрения и
-      модернизации соответствующий условий активизации. Задача организации, в
-      особенности же реализация намеченных плановых заданий играет важную роль в
-      формировании дальнейших направлений развития. Повседневная практика
-      показывает, что постоянное информационно-пропагандистское обеспечение
-      нашей деятельности играет важную роль в формировании существенных
-      финансовых и административных условий. Товарищи! новая модель
-      организационной деятельности требуют от нас анализа направлений
-      прогрессивного развития. Задача организации, в особенности же постоянный
-      количественный рост и сфера нашей активности требуют от нас анализа
-      позиций, занимаемых участниками в отношении поставленных задач. Задача
-      организации, в особенности же реализация намеченных плановых заданий
-      требуют от нас анализа системы обучения кадров, соответствует насущным
-      потребностям.
-    </div>
+    ></div>
   </div>
 </template>
 

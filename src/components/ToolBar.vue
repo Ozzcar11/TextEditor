@@ -6,7 +6,9 @@ import LowIcon from "@/assets/icons/LowIcon.vue";
 import ImageIcon from "@/assets/icons/ImageIcon.vue";
 
 const props = defineProps<{
-  editableText: HTMLDivElement | undefined;
+  editableText: string;
+  canUndo: boolean;
+  canRedo: boolean;
 }>();
 
 let selection: Selection | null = null;
@@ -37,11 +39,10 @@ const surroundText = (node: string) => {
 
 const copyHTML = () => {
   if (props.editableText !== undefined)
-    navigator.clipboard.writeText(props.editableText?.innerHTML);
+    navigator.clipboard.writeText(props.editableText);
 };
 
 const insertImage = () => {
-
   selection = document.getSelection();
 
   if (selection?.anchorNode === null || inEditableContainer(selection))
@@ -67,10 +68,10 @@ const undo = () => {};
 
 <template>
   <div class="tool-bar">
-    <button class="tool-bar__button icon" @click="undo">
+    <button class="tool-bar__button icon" @mousedown="$emit('undoText')" :disabled="!canUndo">
       <UndoIcon />
     </button>
-    <button class="tool-bar__button icon" @click="$emit('redoText')">
+    <button class="tool-bar__button icon" @mousedown="$emit('redoText')" :disabled="!canRedo">
       <RedoIcon />
     </button>
     <button class="tool-bar__button icon" @click="surroundText('h1')">
