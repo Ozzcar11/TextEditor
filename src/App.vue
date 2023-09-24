@@ -1,88 +1,28 @@
 <script setup lang="ts">
 import ToolBar from "./components/ToolBar.vue";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import type { Ref } from "vue";
 
-const editableContainer: Ref<HTMLDivElement | undefined> = ref(undefined);
+import { useEventsStackStore } from "@/store/eventsStack";
 
-const eventsStack: Ref<string[]> = ref([]);
-const eventsStackIndex: Ref<number> = ref(0);
+const store = useEventsStackStore();
 
-const isSpaceKey: Ref<boolean> = ref(false);
-
-const recordEvent = (e?: Event) => {
-  if ((e as InputEvent).data === " ") {
-    if (!isSpaceKey.value) {
-      isSpaceKey.value = true;
-
-      pushToStack();
-
-      return;
-    }
-  } else isSpaceKey.value = false;
-};
-
-const textEdit = (e?: Event) => {
-  recordEvent(e);
-};
-
-const pushToStack = () => {
-  if (!lastItemSame()) {
-    eventsStack.value.splice(eventsStackIndex.value);
-    eventsStack.value.push(editableContainer.value!.innerHTML!);
-    eventsStackIndex.value++;
-  }
-  console.log(eventsStack.value);
-};
-
-const lastItemSame = () => {
-  // @ts-ignore: at() не поддерживается этой версий
-  return editableContainer.value === eventsStack.value.at(-1);
-};
-
-const canUndo = computed(() => {
-  return eventsStackIndex.value > 0;
-});
-
-const canRedo = computed(() => {
-  return eventsStack.value.length - 1 - eventsStackIndex.value > 0;
-});
-
-const undoText = () => {
-  if (canUndo.value) {
-    eventsStackIndex.value--;
-    editableContainer.value!.innerHTML =
-      eventsStack.value[eventsStackIndex.value];
-  }
-};
-
-const redoText = () => {
-  if (canRedo.value) {
-    eventsStackIndex.value++;
-    editableContainer.value!.innerHTML =
-      eventsStack.value[eventsStackIndex.value];
-  }
-};
+const containerRef: Ref<HTMLDivElement | undefined> = ref(undefined);
 
 onMounted(() => {
-  pushToStack();
+  store.setContainer(containerRef);
+  store.pushToStack();
 });
 </script>
 
 <template>
   <div class="container">
-    <ToolBar
-      :editableContainer="editableContainer"
-      :canUndo="canUndo"
-      :canRedo="canRedo"
-      @undoText="undoText"
-      @redoText="redoText"
-    />
+    <ToolBar />
     <div
       id="editable-text"
-      ref="editableContainer"
-      @input="textEdit($event)"
-      @focusout="pushToStack()"
+      ref="containerRef"
+      @input="store.recordEvent($event)"
+      @focusout="store.pushToStack()"
       contenteditable
     >
       Таким
