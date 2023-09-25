@@ -8,7 +8,7 @@ import { useEventsStackStore } from "@/store/eventsStack";
 const store = useEventsStackStore();
 
 const canUndo = computed(() => {
-  return store.eventsStackIndex > 0;
+  return store.eventsStackIndex > 0 && store.eventsStack.length !== 1;
 });
 
 const saveInContainer = () => {

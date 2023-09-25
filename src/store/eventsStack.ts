@@ -22,7 +22,6 @@ export const useEventsStackStore = defineStore("eventsStack", () => {
       eventsStackIndex.value++;
       eventsStack.value.splice(eventsStackIndex.value);
       eventsStack.value.push(container!.value!.innerHTML!);
-      console.log(eventsStack.value);
     }
   };
 
