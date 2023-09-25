@@ -1,8 +1,6 @@
 import inEditableContainer from "@/utils/in-editable-container";
 
-export default (node: string) => {
-  const selection = document.getSelection();
-
+export default (node: string, selection: Selection) => {
   if (selection?.isCollapsed || inEditableContainer(selection)) {
     return alert("Выделите другой текст");
   }

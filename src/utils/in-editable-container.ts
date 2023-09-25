@@ -1,5 +1,5 @@
-export default (selection: Selection | null) => {
+export default (selection: Selection) => {
   return (
-    selection!.focusNode?.parentElement?.closest("#editable-text") === null
+    selection.focusNode?.parentElement?.closest("#editable-text") === null
   );
 };

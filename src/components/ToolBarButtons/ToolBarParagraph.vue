@@ -7,7 +7,11 @@ import { useEventsStackStore } from "@/store/eventsStack";
 const store = useEventsStackStore();
 
 const createParagraph = () => {
-  surroundSelection("p");
+  const selection: Selection | null = document.getSelection();
+
+  if (selection === null) return alert("Выберите текст");
+
+  surroundSelection("p", selection);
   store.pushToStack();
 };
 </script>
