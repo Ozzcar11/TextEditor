@@ -8,11 +8,11 @@ import { useEventsStackStore } from "@/store/eventsStack";
 const store = useEventsStackStore();
 
 const canRedo = computed(() => {
-  return store.eventsStack.length - 1 - store.eventsStackIndex > 0;
+  return store.eventsStackIndex < store.eventsStack.length - 1;
 });
 
 const redoText = () => {
-  if (canRedo) {
+  if (canRedo.value) {
     store.eventsStackIndex++;
     store.getContainer.value!.innerHTML =
       store.eventsStack[store.eventsStackIndex];
@@ -21,11 +21,7 @@ const redoText = () => {
 </script>
 
 <template>
-  <button
-    class="tool-bar__button icon"
-    @mousedown="redoText"
-    :disabled="!canRedo"
-  >
+  <button class="tool-bar__button icon" @click="redoText" :disabled="!canRedo">
     <RedoIcon />
   </button>
 </template>

@@ -3,6 +3,10 @@ import ImageIcon from "@/assets/icons/ImageIcon.vue";
 
 import inEditableContainer from "@/utils/in-editable-container";
 
+import { useEventsStackStore } from "@/store/eventsStack";
+
+const store = useEventsStackStore();
+
 const insertImage = () => {
   const selection = document.getSelection();
 
@@ -22,6 +26,8 @@ const insertImage = () => {
   selection?.getRangeAt(0).insertNode(img);
 
   selection?.empty();
+
+  store.pushToStack();
 };
 </script>
 

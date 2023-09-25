@@ -9,8 +9,6 @@ export const useEventsStackStore = defineStore("eventsStack", () => {
   const eventsStack: Ref<string[]> = ref([]);
   const eventsStackIndex: Ref<number> = ref(0);
 
-  const isSpaceKey: Ref<boolean> = ref(false);
-
   const setContainer = (value: Ref<HTMLDivElement | undefined>) => {
     container = value;
   };
@@ -21,27 +19,16 @@ export const useEventsStackStore = defineStore("eventsStack", () => {
 
   const pushToStack = () => {
     if (!lastItemSame()) {
+      eventsStackIndex.value++;
       eventsStack.value.splice(eventsStackIndex.value);
       eventsStack.value.push(container!.value!.innerHTML!);
-      eventsStackIndex.value++;
+      console.log(eventsStack.value);
     }
-  };
-
-  const recordEvent = (e?: Event) => {
-    if ((e as InputEvent).data === " ") {
-      if (!isSpaceKey.value) {
-        isSpaceKey.value = true;
-
-        pushToStack();
-
-        return;
-      }
-    } else isSpaceKey.value = false;
   };
 
   const lastItemSame = () => {
     // @ts-ignore: at() не поддерживается этой версий
-    return container.value === eventsStack.value.at(-1);
+    return container.value.innerHTML === eventsStack.value.at(-1);
   };
 
   return {
@@ -50,6 +37,5 @@ export const useEventsStackStore = defineStore("eventsStack", () => {
     getContainer,
     setContainer,
     pushToStack,
-    recordEvent,
   };
 });

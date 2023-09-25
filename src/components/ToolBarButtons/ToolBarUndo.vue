@@ -11,21 +11,26 @@ const canUndo = computed(() => {
   return store.eventsStackIndex > 0;
 });
 
+const saveInContainer = () => {
+  store.getContainer.value!.innerHTML =
+    store.eventsStack[store.eventsStackIndex];
+};
+
 const undoText = () => {
-  if (canUndo) {
+  if (canUndo.value) {
+    if (store.eventsStackIndex === store.eventsStack.length) {
+      store.eventsStackIndex -= 2;
+      saveInContainer();
+      return;
+    }
     store.eventsStackIndex--;
-    store.getContainer.value!.innerHTML =
-      store.eventsStack[store.eventsStackIndex];
+    saveInContainer();
   }
 };
 </script>
 
 <template>
-  <button
-    class="tool-bar__button icon"
-    @mousedown="undoText"
-    :disabled="!canUndo"
-  >
+  <button class="tool-bar__button icon" @click="undoText" :disabled="!canUndo">
     <UndoIcon />
   </button>
 </template>
